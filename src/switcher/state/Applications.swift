@@ -198,6 +198,7 @@ class Applications {
             let visibleWids = Set(CGSCallScheduler.windowsInSpaces(allSpaceIds, false))
             let allWids = Set(allSpaceWids)
             let rawWindows = WindowServerQuery.query(allSpaceWids)
+            // let appWindows = WindowServerQuery.query(allSpaceWids).filter { WindowDiscriminator.isApplicationWindowLevel($0) }
             DispatchQueue.main.async {
                 guard scanSequence == latestWindowServerScan else {
                     Logger.debug { "windowScan drop stale issue=\(scanSequence) latest=\(latestWindowServerScan)" }

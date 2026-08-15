@@ -64,6 +64,9 @@
 		5EA8E110000000000000F202 /* SchedulingPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA8E110000000000000F201 /* SchedulingPolicy.swift */; };
 		5EA8E110000000000000F203 /* SchedulingPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA8E110000000000000F201 /* SchedulingPolicy.swift */; };
 		5EA8E110000000000000F212 /* SchedulingPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA8E110000000000000F211 /* SchedulingPolicyTests.swift */; };
+		5E9F1E0000000000000000A2 /* WineWindowPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9F1E0000000000000000A1 /* WineWindowPolicy.swift */; };
+		5E9F1E0000000000000000A3 /* WineWindowPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9F1E0000000000000000A1 /* WineWindowPolicy.swift */; };
+		5E9F1E0000000000000000B2 /* WineWindowPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9F1E0000000000000000B1 /* WineWindowPolicyTests.swift */; };
 		5E5EA12C0000000000000002 /* SearchModeResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E5EA12C0000000000000001 /* SearchModeResolver.swift */; };
 		5E5EA12C0000000000000003 /* SearchModeResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E5EA12C0000000000000001 /* SearchModeResolver.swift */; };
 		5E5EA12C0000000000000102 /* SearchModeResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E5EA12C0000000000000101 /* SearchModeResolverTests.swift */; };
@@ -505,6 +508,8 @@
 		5EA8E110000000000000DA11 /* DragAndDropResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragAndDropResolverTests.swift; sourceTree = "<group>"; };
 		5EA8E110000000000000F201 /* SchedulingPolicy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SchedulingPolicy.swift; sourceTree = "<group>"; };
 		5EA8E110000000000000F211 /* SchedulingPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SchedulingPolicyTests.swift; sourceTree = "<group>"; };
+		5E9F1E0000000000000000A1 /* WineWindowPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WineWindowPolicy.swift; sourceTree = "<group>"; };
+		5E9F1E0000000000000000B1 /* WineWindowPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WineWindowPolicyTests.swift; sourceTree = "<group>"; };
 		5E5EA12C0000000000000001 /* SearchModeResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchModeResolver.swift; sourceTree = "<group>"; };
 		5E5EA12C0000000000000101 /* SearchModeResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchModeResolverTests.swift; sourceTree = "<group>"; };
 		5E5EA12F0000000000000001 /* SearchFieldEditing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchFieldEditing.swift; sourceTree = "<group>"; };
@@ -1150,6 +1155,9 @@
 				BB0000000000000000000001 /* TabGroup.swift */,
 				5A220000000000000000A001 /* WindowAdmissionResolver.swift */,
 				5A220000000000000000A101 /* WindowAdmissionResolverTests.swift */,
+				5F17452D2F1A907800128EF8 /* WindowDiscriminator.swift */,
+				5E9F1E0000000000000000A1 /* WineWindowPolicy.swift */,
+				5E9F1E0000000000000000B1 /* WineWindowPolicyTests.swift */,
 				5F791E4A2F1C65E100B6419C /* ApplicationDiscriminator.swift */,
 				5F906A332F16A18000B99924 /* Screens.swift */,
 				D04BA7CF9C2D1BEC7C05AB24 /* Spaces.swift */,
@@ -2128,6 +2136,8 @@
 				5FC5980000000000000A0102 /* NativeHotkeyResolverTests.swift in Sources */,
 				5E1EC110000000000000C003 /* SelectionResolver.swift in Sources */,
 				5E1EC110000000000000C102 /* SelectionResolverTests.swift in Sources */,
+				5E9F1E0000000000000000A3 /* WineWindowPolicy.swift in Sources */,
+				5E9F1E0000000000000000B2 /* WineWindowPolicyTests.swift in Sources */,
 				5E5EA12C0000000000000003 /* SearchModeResolver.swift in Sources */,
 				5E5EA12C0000000000000102 /* SearchModeResolverTests.swift in Sources */,
 				5E5EA12F0000000000000003 /* SearchFieldEditing.swift in Sources */,
@@ -2241,6 +2251,7 @@
 				D04BA8480A8FF466CA89DA5B /* main.swift in Sources */,
 				D04BAFB973C3D28718FAEB87 /* Windows.swift in Sources */,
 				5E1EC110000000000000C002 /* SelectionResolver.swift in Sources */,
+				5E9F1E0000000000000000A2 /* WineWindowPolicy.swift in Sources */,
 				5E5EA12C0000000000000002 /* SearchModeResolver.swift in Sources */,
 				5E5EA12F0000000000000002 /* SearchFieldEditing.swift in Sources */,
 				5E6010A00000000000000002 /* WindowTitle.swift in Sources */,
