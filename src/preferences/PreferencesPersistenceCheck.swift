@@ -8,11 +8,10 @@ import AppKit
 /// appearing until the user resolves the underlying problem; there is no "don't show again" (a suppression
 /// flag couldn't persist anyway, since persistence is exactly what's broken).
 enum PreferencesPersistenceCheck {
-    /// Every suite AltTab persists to. `UserDefaults.standard` is keyed by the bundle id; the others are
-    /// explicit suites (license/Pro-transition state, usage stats). System suites we only read (e.g.
-    /// `com.apple.Finder`) are out of scope.
+    /// Every suite AltTab persists to. `UserDefaults.standard` is keyed by the bundle id; the other is
+    /// the usage-stats suite. System suites we only read (e.g. `com.apple.Finder`) are out of scope.
     static func suiteNames() -> [String] {
-        [App.bundleIdentifier, LicenseManager.defaultsSuiteName, "\(App.bundleIdentifier).usage"]
+        [App.bundleIdentifier, "\(App.bundleIdentifier).usage"]
     }
 
     /// Entry point, called early from `applicationDidFinishLaunching`. Probes off-main; the (rare) alert

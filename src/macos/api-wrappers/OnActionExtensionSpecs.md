@@ -37,5 +37,5 @@ Mirrors `OnActionExtensionTests.swift` 1:1.
 
 ### C. Wrap pattern (the AppearanceTab use case)
 - **testWrapPatternInvokesPreviousClosureOnFallthrough** — a wrapper that calls `original?(c)` runs both the wrapper and the captured original.
-- **testWrapPatternSkipsPreviousClosureOnEarlyReturn** — a wrapper that returns early (the Pro-locked branch) does NOT fire the original, so the Pro value is never written to `Preferences`.
+- **testWrapPatternSkipsPreviousClosureOnEarlyReturn** — a wrapper that returns early does NOT fire the original.
 - **testOriginalClosureSurvivesReassignment** — the captured `original` still fires after `onAction` is reassigned many times (no premature release).
