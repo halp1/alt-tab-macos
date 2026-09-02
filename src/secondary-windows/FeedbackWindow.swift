@@ -147,7 +147,7 @@ class FeedbackWindow: NSWindow {
 
     @objc private func selectBug() {
         kind = .bug
-        checkForUpdatesAndProceed()
+        showForm()
     }
 
     @objc private func selectEnhancement() {

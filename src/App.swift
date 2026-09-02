@@ -123,9 +123,7 @@ class App: AppCenterApplication {
         focusSelectedWindow(selectedWindow)
     }
 
-    @objc static func checkForUpdatesNow(_ sender: NSMenuItem) {
-        GeneralTab.checkForUpdatesNow(sender)
-    }
+    @objc static func checkForUpdatesNow(_ sender: NSMenuItem) {}
 
     @objc static func checkPermissions(_ sender: NSMenuItem) {
         showPermissionsWindow()
@@ -476,14 +474,8 @@ class App: AppCenterApplication {
         // Needs the AX runloop `BackgroundWork.start()` created, so it cannot go with the launch-time setup.
         AxObserverRegistry.shared.startRecoveryTicks()
         CliEvents.observe()
-        App.sparkleDelegate = SparkleDelegate()
-        App.updaterController = SPUStandardUpdaterController(
-            startingUpdater: false,
-            updaterDelegate: App.sparkleDelegate!,
-            userDriverDelegate: nil)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 30) {
-            App.updaterController?.startUpdater()
-        }
+        // This is a locally-modded build. Never start Sparkle — an official update would
+        // overwrite it with a stock AltTab that re-locks Pro features.
         PreferencesEvents.initialize()
         BenchmarkRunner.startIfNeeded()
         showSettingsWindowOnFirstLaunchIfNeeded()

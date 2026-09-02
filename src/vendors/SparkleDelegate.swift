@@ -24,7 +24,7 @@ class SparkleDelegate: NSObject, SPUUpdaterDelegate {
     var onNextCheckCompletion: ((UpdateCheckResult) -> Void)?
 
     func feedURLString(for updater: SPUUpdater) -> String? {
-        return Endpoints.appcastUrl
+        return nil
     }
 
     func feedParameters(for updater: SPUUpdater, sendingSystemProfile sendingProfile: Bool) -> [[String: String]] {

@@ -36,7 +36,7 @@ class Preferences {
             "menubarIconShown": "true",
             "language": LanguagePreference.systemDefault.indexAsString,
             "exceptions": defaultExceptions(),
-            "updatePolicy": UpdatePolicyPreference.autoCheck.indexAsString,
+            "updatePolicy": UpdatePolicyPreference.manual.indexAsString,
             "crashPolicy": CrashPolicyPreference.ask.indexAsString,
             "hideThumbnails": "false",
             "hideSpaceNumberLabels": "true",
