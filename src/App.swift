@@ -137,7 +137,6 @@ class App: AppCenterApplication {
     }
 
     @objc static func checkForUpdatesNow(_ sender: NSMenuItem) {
-        GeneralTab.checkForUpdatesNow(sender)
     }
 
     // periphery:ignore:parameters sender - NSMenuItem target/action signature
@@ -565,13 +564,7 @@ class App: AppCenterApplication {
             startingUpdater: false,
             updaterDelegate: App.sparkleDelegate!,
             userDriverDelegate: nil)
-        #if DEBUG
-        if !Preferences.qaPristine && !QaLifecycle.enabled {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 30) { App.updaterController?.startUpdater() }
-        }
-        #else
-        DispatchQueue.main.asyncAfter(deadline: .now() + 30) { App.updaterController?.startUpdater() }
-        #endif
+        // Personal fork: Sparkle is never started, so an official release can't replace this build.
         PreferencesEvents.initialize()
         BenchmarkRunner.startIfNeeded()
         endFirstLaunchWithPopoverOrSettings()

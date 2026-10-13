@@ -16,13 +16,19 @@ class LicenseManager {
 
     static let shared: LicenseManager = {
         let keychain = SystemKeychain(service: keychainService)
-        return LicenseManager(
+        let manager = LicenseManager(
             clock: SystemClock(),
             keychain: keychain,
             api: RemoteLicenseClient(baseUrl: Endpoints.licenseApiBaseUrl, keychain: keychain),
             defaults: UserDefaults(suiteName: defaultsSuiteName)!
         )
+        manager.alwaysPro = true
+        return manager
     }()
+
+    /// Personal fork: the app's shared instance is always Pro and never contacts the license server.
+    /// Instances built directly (the unit tests) keep upstream's trial/licence behaviour.
+    var alwaysPro = false
 
     static let trialDuration = 14
     private static let revalidationInterval: TimeInterval = 30 * 24 * 60 * 60 // 30 days
@@ -220,6 +226,7 @@ class LicenseManager {
     }
 
     func computeState() -> LicenseState {
+        guard !alwaysPro else { return .pro }
         #if DEBUG
         if hasMockedLicense { return state }
         #endif
@@ -249,6 +256,7 @@ class LicenseManager {
     }
 
     func scheduleAsyncRevalidationIfNeeded() {
+        guard !alwaysPro else { return }
         let lastValidation = defaults.double(forKey: "lastValidation")
         let elapsed = clock.now.timeIntervalSince1970 - lastValidation
         guard elapsed >= Self.revalidationInterval else { return }
