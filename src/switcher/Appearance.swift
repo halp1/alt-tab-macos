@@ -41,7 +41,9 @@ class Appearance {
     private static var currentSize: AppearanceSizePreference { Preferences.effectiveAppearanceSize(SwitcherSession.activeShortcutIndex) }
     static var currentTheme: AppearanceThemePreference {
         let theme = Preferences.effectiveAppearanceTheme(SwitcherSession.activeShortcutIndex)
-        return theme == .system ? NSAppearance.current.getThemeName() : theme
+        // `getThemeName()` reads `NSApp.effectiveAppearance` and ignores its receiver, so naming that
+        // appearance directly is the same answer without the deprecated `NSAppearance.current`.
+        return theme == .system ? NSApp.effectiveAppearance.getThemeName() : theme
     }
 
     static func update() {

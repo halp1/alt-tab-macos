@@ -312,7 +312,9 @@ class ExceptionEditorView: NSView {
     }
 
     private func resolveHeaderAsync(for bundleId: String) {
-        DispatchQueue.global(qos: .userInitiated).async {
+        // Weak on the OUTER closure as well: capturing `self` strongly there held the view alive for the
+        // whole LaunchServices resolve, which made the inner `[weak self]` decorative.
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             let info = AppDisplayInfo.resolve(bundleId: bundleId)
             DispatchQueue.main.async { [weak self] in
                 guard let self, self.entry.bundleIdentifier == bundleId else { return }

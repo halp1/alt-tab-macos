@@ -284,10 +284,11 @@ class SidebarListRow: ClickHoverStackView {
             backgroundColor = .clear
         }
         titleLabel.font = NSFont.systemFont(ofSize: 13, weight: isSelectedRow ? .semibold : .regular)
-        let previousAppearance = NSAppearance.current
-        NSAppearance.current = effectiveAppearance
-        layer?.backgroundColor = backgroundColor.cgColor
-        NSAppearance.current = previousAppearance
+        // Resolving `cgColor` inside the block is the point: a dynamic NSColor flattens against whatever
+        // appearance is current, and a CALayer colour keeps no link to the view's own.
+        effectiveAppearance.performAsCurrentDrawingAppearance {
+            layer?.backgroundColor = backgroundColor.cgColor
+        }
         titleLabel.needsDisplay = true
         summaryLabel.needsDisplay = true
         chevronLabel.needsDisplay = true

@@ -1,6 +1,7 @@
 import Cocoa
 import Carbon.HIToolbox.Events
 import ShortcutRecorder
+import UniformTypeIdentifiers
 
 enum SearchKeyResult {
     case handled
@@ -775,7 +776,7 @@ class TilesDocumentView: FlippedView {
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         // we only handle URLs (i.e. not text, image, or other draggable things)
-        registerForDraggedTypes([NSPasteboard.PasteboardType(kUTTypeURL as String)])
+        registerForDraggedTypes([NSPasteboard.PasteboardType(UTType.url.identifier)])
     }
 
     required init?(coder: NSCoder) {
@@ -805,9 +806,15 @@ class TilesDocumentView: FlippedView {
         let urls = (sender.draggingPasteboard.readObjects(forClasses: [NSURL.self]) as? [URL]) ?? []
         guard DragAndDropResolver.canDrop(hasTarget: target != nil, hasWindow: target?.window_ != nil, hasAppBundleURL: appUrl != nil, urlCount: urls.count),
               let appUrl else { return false }
-        let open = try? NSWorkspace.shared.open(urls, withApplicationAt: appUrl, options: [], configuration: [:])
-        if open != nil { App.hideUi() }
-        return open != nil
+        // The replacement for the deprecated synchronous `open(_:withApplicationAt:options:configuration:)`
+        // reports success through a completion handler instead of a return value, so the drop is accepted
+        // here and the UI is hidden once the open actually succeeds. AppKit calls the handler on an
+        // arbitrary queue, hence the hop to main — `hideUi` is AppKit work.
+        NSWorkspace.shared.open(urls, withApplicationAt: appUrl, configuration: NSWorkspace.OpenConfiguration()) { _, error in
+            guard error == nil else { return }
+            DispatchQueue.main.async { App.hideUi() }
+        }
+        return true
     }
 
     override func concludeDragOperation(_ sender: NSDraggingInfo?) {
