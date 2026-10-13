@@ -12,9 +12,15 @@ struct PhysicalSurface: Equatable {
     let isMinimized: Bool
     let isFullscreen: Bool
     let alpha: Float
+    /// Wine raises a screen-covering game window over the Dock and the menu bar, on an ORDINARY user Space —
+    /// so it is neither level 0 nor fullscreen-tagged, and it carries subrole `AXUnknown`, which means no
+    /// other field here vouches for it. Resolved from the WindowServer row because it is a fact about the
+    /// owning process, not about AX. See `WineWindowPolicySpecs.md`.
+    let isWineGameWindow: Bool
 
     init(wid: CGWindowID, pid: pid_t, bounds: CGRect, level: CGWindowLevel, parentWid: CGWindowID = 0,
-         isVisible: Bool = true, isMinimized: Bool = false, isFullscreen: Bool = false, alpha: Float = 1) {
+         isVisible: Bool = true, isMinimized: Bool = false, isFullscreen: Bool = false, alpha: Float = 1,
+         isWineGameWindow: Bool = false) {
         self.wid = wid
         self.pid = pid
         self.bounds = bounds
@@ -24,13 +30,43 @@ struct PhysicalSurface: Equatable {
         self.isMinimized = isMinimized
         self.isFullscreen = isFullscreen
         self.alpha = alpha
+        self.isWineGameWindow = isWineGameWindow
     }
 
     init(_ raw: WsRawWindow) {
         self.init(wid: raw.wid, pid: raw.pid, bounds: raw.bounds,
             level: CGWindowLevel(raw.level), parentWid: raw.parentWid,
             isVisible: WsWindowState.isVisible(raw), isMinimized: WsWindowState.isMinimized(raw),
-            isFullscreen: WsWindowState.isFullscreen(raw), alpha: raw.alpha)
+            isFullscreen: WsWindowState.isFullscreen(raw), alpha: raw.alpha,
+            isWineGameWindow: PhysicalSurface.resolveWineGameWindow(raw))
+    }
+
+    /// Shape first, so the `KERN_PROCARGS` read (5.5µs measured) is paid only by the raised windows a full
+    /// desktop has rather than by all of them. Wine's menus sit at 101+, above the ceiling, so they are
+    /// dropped before the process lookup.
+    ///
+    /// **The title deliberately does NOT gate this.** `SLSWindowIteratorCopyTitle` only returns a string when
+    /// the query asked for ONE wid: measured on macOS 26.5, querying wid 18025 alone gives "Geometry Dash"
+    /// 100/100 times, while the same wid inside a batch of 2 or 10 gives "" 100/100 times. AltTab batches
+    /// (`refreshWindowsViaWindowServer`, `refreshWindowServerState`), so `raw.title` is empty on exactly the
+    /// passes that re-run admission for an already-tracked window. Gating on it made the Wine vouch flicker
+    /// off mid-session and the game was then rejected as an `auxiliarySurface` and replaced by a windowless
+    /// icon — with the title read a moment earlier, by a single-wid query, having been correct.
+    ///
+    /// Dropping the title costs nothing real: process identity is the actual verdict, and Wine's helper
+    /// windows (the 1512x33 menu-bar proxy, the 500x500 desktop stand-in) sit at level 0, so the raised-level
+    /// test already excludes them without help from the title.
+    ///
+    /// The bundle id is read from `NSRunningApplication`, whose header documents it as thread safe (see
+    /// `src/main-thread-ipc.md`), because a CrossOver bottle-app launcher is identified by bundle id and
+    /// `KERN_PROCARGS` carries only the path. It is read only for a window that already passed the level
+    /// test — a handful per desktop — so the LaunchServices lookup is not on any per-window hot path.
+    private static func resolveWineGameWindow(_ raw: WsRawWindow) -> Bool {
+        guard WineWindowPolicy.isRaisedGameWindowLevel(CGWindowLevel(raw.level)) else { return false }
+        let executablePath = Sysctl.run([CTL_KERN, KERN_PROCARGS, raw.pid])
+        if WineWindowPolicy.isWineExecutablePath(executablePath) { return true }
+        let runningApplication = NSRunningApplication(processIdentifier: raw.pid)
+        return WineWindowPolicy.isCrossOverBottleApp(runningApplication?.bundleIdentifier, executablePath)
     }
 
     var isSubstantial: Bool {
@@ -148,8 +184,13 @@ enum WindowAdmissionResolver {
     ///
     /// Covering the screen is the other positive vouch: a fullscreen surface is where the user already is,
     /// whatever level the WindowServer parks it at.
+    ///
+    /// A Wine game window is the third, and it needs its own vouch because it satisfies none of the others:
+    /// Wine raises it over the Dock / menu-bar band on an ordinary Space, and hands it subrole `AXUnknown`
+    /// with `kAXMain` unset, so level, the fullscreen bit and AX all decline to speak for it.
     private static func admissiblePlacement(_ physical: PhysicalSurface, _ semantic: SemanticSurface?) -> Bool {
-        physical.level == normalLevel || physical.isFullscreen || semantic?.isMain == true
+        physical.level == normalLevel || physical.isFullscreen || physical.isWineGameWindow ||
+            semantic?.isMain == true
     }
 
     /// **Exact attention fills a silence; it does not overrule an answer.** Both channels that reach here read

@@ -28,14 +28,23 @@ The **level is the headline fact**: 27 while the game holds focus, 21 once Wine 
 (which Wine does for a fullscreen game). Wine's macdrv raises the window over the Dock (20) and the menu bar
 (24/25) so the game can cover them. It is never 0 in either state, so a level-0 gate can never see it.
 
-## The two gates it feeds
+## The gate it feeds
 
-1. **The coarse WindowServer gate** (`WsWindowState.isApplicationWindowLevel`, level == 0). This runs on the
-   raw snapshot, *before* an AX element is acquired, so a Wine game window was rejected before AX — which
-   holds a perfectly good `AXWindow` element for it — was ever consulted. This is the gate that made the
-   window invisible to AltTab in every state.
-2. **The fine AX gate** (`WindowDiscriminator.isActualWindow`). Wine's subrole is `AXUnknown`, so the
-   standard-subrole path can't accept it either; it needs the explicit `wineWindow` rule.
+**`WindowAdmissionResolver.admissiblePlacement`.** Admission asks one question of placement: a destination
+sits at the ordinary window level, or covers the screen, or is positively marked `kAXMain`. A Wine game
+window satisfies none of the three — it is raised to 21/27 on an *ordinary* user Space (`spaceTypeMask 0x1`,
+so the fullscreen bit is clear), and Wine leaves `kAXMain` unset on an `AXUnknown` subrole — so without a
+vouch of its own it is rejected as an `auxiliarySurface`, exactly like the HUDs that rule exists to exclude.
+
+`PhysicalSurface.isWineGameWindow` is that vouch. It is a *physical* fact, resolved from the WindowServer row
+by `resolveWineGameWindow`, because the evidence is the owning process's executable path — something AX
+cannot answer. Placing it there makes it bind on every channel at once: ordinary discovery, exact attention,
+and the `reevaluateAdmission` re-run all read the same `PhysicalSurface`.
+
+Nothing extra is needed to get the surface *inspected*: `shouldAcquireSemantics` already admits any
+substantial surface at any level, and a screen-covering game window is substantial. The level gate the
+original fix had to defeat (`WsWindowState.isApplicationWindowLevel`, level == 0) is no longer a rejection —
+upstream demoted it to an acquisition hint.
 
 ## Behavior & edge cases
 
@@ -47,8 +56,28 @@ The **level is the headline fact**: 27 while the game holds focus, 21 once Wine 
   windows to ~22 (Control Center items, menu-bar extras, Notification Center, Spotlight, the Dock, and the
   two game windows); the executable-path test then rejects all but the Wine ones. Measured cost of the read:
   **5.5µs**, on the off-main `cgsCall` lane — so ~120µs per discovery pass, and no cache is warranted.
-- **Untitled windows are excluded by shape.** That is what keeps Wine's own helper windows out of the
-  process lookup, and it is safe because a game window always carries the game's title.
+- **The admission gate keys on LEVEL alone, never the title.** `SLSWindowIteratorCopyTitle` returns the real
+  string only for a query that asked for a SINGLE wid; every batched query returns `""` for every window.
+  Measured on macOS 26.5 against live Geometry Dash (wid 18025): queried alone, "Geometry Dash" 100/100
+  times; the same wid inside a batch of 2 or of 10, `""` 100/100 times. AltTab batches on the passes that
+  re-run admission for an already-tracked window (`refreshWindowServerState`, `refreshWindowsViaWindowServer`),
+  so a title test flips the verdict on an unchanged window — the game was admitted at discovery, then
+  rejected as `auxiliarySurface` seconds later and replaced by a windowless icon.
+  Level is sufficient anyway: all six of Wine's helper windows sit at level 0 (measured), so the raised band
+  excludes them with no help from the title. `hasRaisedGameWindowShape` keeps the title test for callers
+  holding a TRUSTED title (an AX title, or a single-wid query).
+- **A CrossOver bottle app is a THIRD identity shape, and it HAS a bundle id.** Launching a game from its
+  bottle app (`~/Applications/CrossOver/<Game>.app`) rather than through Steam leaves the game's window owned
+  by CrossOver's per-entry launcher: executable `Menu Helper`, bundle id
+  `com.codeweavers.CrossOverHelper.<bottle hash>.<entry hash>`, Developer ID signed by CodeWeavers Inc.
+  (team 9C6B7X7Z8E). MEASURED on macOS 26.5 with CrossOver 26.3: pid 46809 owns wid 84840 at level 27, titled
+  "Geometry Dash". Its path contains neither `/wine/` nor `/winetemp-`, and its bundle id is not nil, so BOTH
+  halves of the loader rule below miss it — this is why the game went missing a second time.
+  `isCrossOverBottleApp` therefore runs before the nil-bundle-id guard. The bundle-id prefix and the
+  `Menu Helper` executable are both required, so CrossOver's own app stays a native app. Every bottle entry
+  shares the shape (verified across the Epic Games Launcher, EA, EA app Updater and Steam Support entries), so
+  no game is named. It remains only half the verdict: the raised-level test is the other half, and CrossOver's
+  own Steam window sits at level 0 (measured alongside).
 - **Identity is matched on the executable path, never the process name.** Under CrossOver the process is
   named for the Windows binary (`GeometryDash.exe`) and lives in a per-bottle temp copy
   (`…/T/winetemp-<id>/GeometryDash.exe`); under Yaagl it is named for the loader (`wine`) and lives in a

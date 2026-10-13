@@ -198,7 +198,6 @@ class Applications {
             let visibleWids = Set(CGSCallScheduler.windowsInSpaces(allSpaceIds, false))
             let allWids = Set(allSpaceWids)
             let rawWindows = WindowServerQuery.query(allSpaceWids)
-            // let appWindows = WindowServerQuery.query(allSpaceWids).filter { WindowDiscriminator.isApplicationWindowLevel($0) }
             DispatchQueue.main.async {
                 guard scanSequence == latestWindowServerScan else {
                     Logger.debug { "windowScan drop stale issue=\(scanSequence) latest=\(latestWindowServerScan)" }
@@ -817,7 +816,10 @@ class Applications {
     /// An attempt should act on, and be recorded against, the facts as they are when it runs.
     static func discoverInactiveTabs(_ app: Application, _ untrackedTitles: [String], _ requesterWid: CGWindowID) {
         let pid = app.pid
-        tabAdoptThrottler.throttleOrProceed(key: "\(pid)") {
+        // Weak on the throttler closure too: capturing `app` strongly there held the Application past its
+        // process's death for the whole throttle window, which made the inner `[weak app]` decorative.
+        tabAdoptThrottler.throttleOrProceed(key: "\(pid)") { [weak app] in
+            guard let app else { return }
             let appWindowCount = Windows.list.reduce(0) { $1.application.pid == pid ? $0 + 1 : $0 }
             let situation = "\(untrackedTitles.sorted().joined(separator: "\u{1}"))|\(appWindowCount)"
             let previous = lastInactiveTabScan[pid]

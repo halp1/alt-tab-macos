@@ -278,6 +278,7 @@
 		D04BA1CEC6B9C8945FEC8740 /* TileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04BA258B56193958D60978A /* TileView.swift */; };
 		D04BA22840D40E3885B2B29E /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D04BA3A932D3C8F850504919 /* InfoPlist.strings */; };
 		D04BA26A691D56031FCCF00C /* Sysctl.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04BA8DB8AA7E5570DAC568A /* Sysctl.swift */; };
+		D04BA26A691D56031FCCF00D /* Sysctl.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04BA8DB8AA7E5570DAC568A /* Sysctl.swift */; };
 		D04BA276B3241D440F65B149 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D04BA5C2BB394F1624DD5B45 /* InfoPlist.strings */; };
 		D04BA2A6FF9DDDC5A1A68E36 /* Applications.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04BA282BB16C1554595A968 /* Applications.swift */; };
 		D04BA2D8099594E1593EC8EF /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D04BA88EDDDD6CB3FBE71FC5 /* InfoPlist.strings */; };
@@ -1043,7 +1044,6 @@
 				BB0000000000000000000001 /* TabGroup.swift */,
 				5A220000000000000000A001 /* WindowAdmissionResolver.swift */,
 				5A220000000000000000A101 /* WindowAdmissionResolverTests.swift */,
-				5F17452D2F1A907800128EF8 /* WindowDiscriminator.swift */,
 				5E9F1E0000000000000000A1 /* WineWindowPolicy.swift */,
 				5E9F1E0000000000000000B1 /* WineWindowPolicyTests.swift */,
 				5F791E4A2F1C65E100B6419C /* ApplicationDiscriminator.swift */,
@@ -1943,6 +1943,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D04BA26A691D56031FCCF00D /* Sysctl.swift in Sources */,
 				5A1100000000000000030001 /* TrackingTypes.swift in Sources */,
 				5A1100000000000000030017 /* AttentionModel.swift in Sources */,
 				5A1100000000000000030006 /* AxObserverHealth.swift in Sources */,
@@ -2787,7 +2788,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -2839,7 +2840,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;

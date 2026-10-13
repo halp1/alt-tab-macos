@@ -3,9 +3,17 @@ import XCTest
 final class WindowAdmissionResolverTests: XCTestCase {
     private func physical(wid: CGWindowID = 1, width: CGFloat = 800, height: CGFloat = 600,
                           level: CGWindowLevel = 0, parentWid: CGWindowID = 0,
-                          isFullscreen: Bool = false) -> PhysicalSurface {
+                          isFullscreen: Bool = false, isWineGameWindow: Bool = false) -> PhysicalSurface {
         PhysicalSurface(wid: wid, pid: 7, bounds: CGRect(x: 0, y: 0, width: width, height: height),
-            level: level, parentWid: parentWid, isFullscreen: isFullscreen)
+            level: level, parentWid: parentWid, isFullscreen: isFullscreen,
+            isWineGameWindow: isWineGameWindow)
+    }
+
+    /// Genshin Impact under Yaagl, as the WindowServer and AX actually describe it: raised to 27 on an
+    /// ORDINARY Space (so `isFullscreen` is false), titled, `AXWindow`/`AXUnknown`, `kAXMain` unset. Every
+    /// other placement vouch declines, so `isWineGameWindow` is the only thing that can admit it.
+    private func wineGameSemantic() -> SemanticSurface {
+        semantic(title: "Genshin Impact", subrole: kAXUnknownSubrole, isMain: false)
     }
 
     private func semantic(title: String? = "Document", subrole: String? = kAXStandardWindowSubrole,
@@ -176,6 +184,43 @@ final class WindowAdmissionResolverTests: XCTestCase {
     func testNonWindowRoleIsRejected() {
         XCTAssertEqual(WindowAdmissionResolver.resolve(physical(), semantic(subrole: kAXUnknownSubrole, role: kAXButtonRole)),
             .reject(.nonWindowRole))
+    }
+
+    /// The regression this pins: at level 27 with `AXUnknown` and no `kAXMain`, placement is the rule that
+    /// decides, and without the Wine vouch it rejects the game as an `auxiliarySurface` — the switcher then
+    /// shows the app as a windowless icon.
+    func testRaisedWineGameWindowIsADestination() {
+        XCTAssertEqual(WindowAdmissionResolver.resolve(physical(level: 27, isWineGameWindow: true),
+            wineGameSemantic()), .destination(.customWindowRoot))
+    }
+
+    /// Wine drops the game to 21 when it minimizes it on focus loss — which is what summoning the switcher
+    /// causes, so this is the state the switcher itself reads most often.
+    func testWineGameWindowStaysADestinationAtTheMinimizedLevel() {
+        XCTAssertEqual(WindowAdmissionResolver.resolve(physical(level: 21, isWineGameWindow: true),
+            wineGameSemantic()), .destination(.customWindowRoot))
+    }
+
+    /// The same window with the Wine fact cleared is exactly the rejection users reported after the merge.
+    func testRaisedUnknownSubroleWindowWithoutTheWineFactIsStillRejected() {
+        XCTAssertEqual(WindowAdmissionResolver.resolve(physical(level: 27), wineGameSemantic()),
+            .reject(.auxiliarySurface))
+    }
+
+    /// Exact attention reaches the game while AX has not described it yet (Wine vends no element for an
+    /// ordered-out window), so the vouch has to bind on this channel too.
+    func testExactAttentionAdmitsAnUndescribedWineGameWindow() {
+        XCTAssertEqual(WindowAdmissionResolver.resolve(physical(level: 27, isWineGameWindow: true), nil,
+            evidence: .attention), .destination(.exactAttention))
+    }
+
+    /// The vouch is placement-only: it must not rescue a surface AX positively refuses, nor Wine's own
+    /// floating menus, which are what the level ceiling and the auxiliary subroles exist to exclude.
+    func testTheWineVouchDoesNotOverrideASemanticRefusal() {
+        XCTAssertEqual(WindowAdmissionResolver.resolve(physical(level: 27, isWineGameWindow: true),
+            semantic(subrole: kAXUnknownSubrole, role: kAXButtonRole)), .reject(.nonWindowRole))
+        XCTAssertEqual(WindowAdmissionResolver.resolve(physical(level: 27, isWineGameWindow: true),
+            semantic(subrole: kAXFloatingWindowSubrole)), .reject(.auxiliarySurface))
     }
 
     func testLevelZeroAndSubstantialNonZeroLevelAcquireSemantics() {

@@ -2,7 +2,8 @@ import XCTest
 
 /// Pins `WineWindowPolicy` against the shapes measured live on macOS 26.5 from CrossOver 26.3
 /// ("Geometry Dash") and Yaagl ("Genshin Impact") — see `WineWindowPolicySpecs.md` for the capture.
-/// Pure data in, `Bool` out; `WindowDiscriminator` applies these verdicts at its two gates.
+/// Pure data in, `Bool` out. `PhysicalSurface.resolveWineGameWindow` applies these verdicts at the admission
+/// gate, `WindowThumbnails.yieldsBlankCapture` at the capture gate.
 ///
 /// Groups: A measured level constants · B acceptable levels · C raised-shape pre-check ·
 /// D executable-path identity · E full process identity (bundle id + name fallback) ·
@@ -58,6 +59,21 @@ final class WineWindowPolicyTests: XCTestCase {
     /// from ever reaching the process lookup.
     func testRaisedShapeRejectsUntitledWindows() {
         XCTAssertFalse(WineWindowPolicy.hasRaisedGameWindowShape(27, ""))
+    }
+
+    /// The admission gate keys on level alone, because a batched WindowServer query returns "" for every
+    /// title. The game must be recognised at both measured levels with no title at all — this is the exact
+    /// regression that made it flicker out of the switcher mid-session and become a windowless icon.
+    func testRaisedLevelIsRecognizedWithoutATitle() {
+        XCTAssertTrue(WineWindowPolicy.isRaisedGameWindowLevel(27))
+        XCTAssertTrue(WineWindowPolicy.isRaisedGameWindowLevel(21))
+    }
+
+    /// Wine's helper windows (menu-bar proxy, desktop stand-in) sit at level 0, so the raised band excludes
+    /// them without needing the title that the batched query cannot supply.
+    func testWineHelperWindowsAreExcludedByLevelAlone() {
+        XCTAssertFalse(WineWindowPolicy.isRaisedGameWindowLevel(WineWindowPolicy.normalLevel))
+        XCTAssertFalse(WineWindowPolicy.isRaisedGameWindowLevel(CGWindowLevelForKey(.popUpMenuWindow)))
     }
 
     func testRaisedShapeRejectsLevelsAboveTheCeiling() {
@@ -127,6 +143,44 @@ final class WineWindowPolicyTests: XCTestCase {
     /// The pre-2023 CrossOver shape, which the original rule keyed on, still resolves via the name fallback.
     func testLegacyPreloaderNameIsWineWhenPathMisses() {
         XCTAssertTrue(WineWindowPolicy.isWineProcess(nil, "/some/opaque/path", "wine64-preloader"))
+    }
+
+    // MARK: - E2. The CrossOver bottle-app launcher shape
+
+    private static let bottleAppPath = "/Users/halp/Applications/CrossOver/GeometryDash.app/Contents/MacOS/Menu Helper"
+    private static let bottleAppBundleId = "com.codeweavers.CrossOverHelper.4DB4563826BAD0EB2F60EE6E42D0EA4B.3994D592B8B19BDF44EBB71B0F8A6B3A"
+
+    /// Launched from its bottle app rather than through Steam, the game's window is owned by CrossOver's
+    /// `Menu Helper`, which HAS a bundle id and a path containing neither `/wine/` nor `/winetemp-`. Measured
+    /// live: pid 46809, wid 84840, level 27, title "Geometry Dash".
+    func testCrossOverBottleAppLauncherIsWine() {
+        XCTAssertTrue(WineWindowPolicy.isCrossOverBottleApp(Self.bottleAppBundleId, Self.bottleAppPath))
+        XCTAssertTrue(WineWindowPolicy.isWineProcess(Self.bottleAppBundleId, Self.bottleAppPath, "GeometryDash"))
+    }
+
+    /// Neither half of the loader rule can see it: the path misses the pattern, and the bundle id is not nil.
+    func testBottleAppLauncherIsMissedByTheLoaderRule() {
+        XCTAssertFalse(WineWindowPolicy.isWineExecutablePath(Self.bottleAppPath))
+    }
+
+    /// Every bottle entry shares the shape, so the rule generalizes rather than naming one game.
+    func testEveryCrossOverBottleEntryIsRecognized() {
+        for (id, path) in [("com.codeweavers.CrossOverHelper.F3C1C17BD4C741943BFDBB6C48C87F49.C9714D92416DB196B9495DA9D96E2843",
+                            "/Users/halp/Applications/CrossOver/Epic Games Launcher.app/Contents/MacOS/Menu Helper"),
+                           ("com.codeweavers.CrossOverHelper.C71B4244F70372F8BE07A3E83C584900.8C07343CF92C0B4C498BA961C4525066",
+                            "/Users/halp/Applications/CrossOver/EA/EA.app/Contents/MacOS/Menu Helper")] {
+            XCTAssertTrue(WineWindowPolicy.isCrossOverBottleApp(id, path), id)
+        }
+    }
+
+    /// Both halves are required, so neither a CodeWeavers bundle id alone nor a `Menu Helper` path alone
+    /// admits a process — CrossOver's own app stays a native app.
+    func testCrossOverItselfAndPartialMatchesAreNotBottleApps() {
+        XCTAssertFalse(WineWindowPolicy.isCrossOverBottleApp("com.codeweavers.CrossOver",
+            "/Users/halp/Applications/CrossOver.app/Contents/MacOS/CrossOver"))
+        XCTAssertFalse(WineWindowPolicy.isCrossOverBottleApp(Self.bottleAppBundleId, "/Applications/Other.app/Contents/MacOS/Other"))
+        XCTAssertFalse(WineWindowPolicy.isCrossOverBottleApp("com.example.app", Self.bottleAppPath))
+        XCTAssertFalse(WineWindowPolicy.isCrossOverBottleApp(nil, Self.bottleAppPath))
     }
 
     func testUnknownBundleLessProcessIsNotWine() {
