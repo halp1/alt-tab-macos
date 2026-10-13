@@ -147,6 +147,18 @@ enum WindowThumbnails {
         return false
     }
 
+    /// A Wine game window has live content only while the game itself is focused and in front; captured in any
+    /// other state it comes back a single flat colour that would overwrite the real thumbnail. Skipping keeps
+    /// the good one — the one `captureFocusedInBackground` takes while the game IS focused, which is the only
+    /// path that runs in the state this admits. See `WineWindowPolicySpecs.md` for the measurements.
+    /// Main-thread only (reads live `Window` / `Application` / session state).
+    private static func yieldsBlankCapture(_ window: Window) -> Bool {
+        let app = window.application
+        guard WineWindowPolicy.isWineProcess(app.bundleIdentifier, app.executableURL?.path, app.localizedName) else { return false }
+        return WineWindowPolicy.yieldsBlankCapture(isSwitcherActive: SwitcherSession.isActive,
+            isFrontmostApp: Applications.frontmostPid == app.pid, isFocusedWindow: app.focusedWindow === window)
+    }
+
     /// Dispatch screenshot requests off the main-thread. These captures are thumbnail-scale ONLY (on
     /// macOS 26+): full-resolution frames for the Preview panel are fetched separately and just-in-time
     /// by `fetchPreviewFrames` into the session's capped cache, so idle RAM stays small and a show
@@ -163,7 +175,8 @@ enum WindowThumbnails {
             if !window.isWindowlessApp, let cgWindowId = window.cgWindowId, cgWindowId != CGWindowID(bitPattern: -1),
                // mid-restore-animation the OS draws the window scaled down; `deferCaptureUntilRestoreEnds`
                // takes the one capture that matters once it is over
-               !restoringWids.contains(cgWindowId) {
+               !restoringWids.contains(cgWindowId),
+               !yieldsBlankCapture(window) {
                 eligibleWindows.append(window)
             }
         }

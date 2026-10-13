@@ -329,6 +329,10 @@
 		D04BA1CEC6B9C8945FEC8740 /* TileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04BA258B56193958D60978A /* TileView.swift */; };
 		D04BA22840D40E3885B2B29E /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D04BA3A932D3C8F850504919 /* InfoPlist.strings */; };
 		D04BA26A691D56031FCCF00C /* Sysctl.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04BA8DB8AA7E5570DAC568A /* Sysctl.swift */; };
+		D04BA26A691D56031FCCF00D /* Sysctl.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04BA8DB8AA7E5570DAC568A /* Sysctl.swift */; };
+		5E9F1E0000000000000000A2 /* WineWindowPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9F1E0000000000000000A1 /* WineWindowPolicy.swift */; };
+		5E9F1E0000000000000000A3 /* WineWindowPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9F1E0000000000000000A1 /* WineWindowPolicy.swift */; };
+		5E9F1E0000000000000000B2 /* WineWindowPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9F1E0000000000000000B1 /* WineWindowPolicyTests.swift */; };
 		D04BA276B3241D440F65B149 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D04BA5C2BB394F1624DD5B45 /* InfoPlist.strings */; };
 		D04BA2A6FF9DDDC5A1A68E36 /* Applications.swift in Sources */ = {isa = PBXBuildFile; fileRef = D04BA282BB16C1554595A968 /* Applications.swift */; };
 		D04BA2D8099594E1593EC8EF /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = D04BA88EDDDD6CB3FBE71FC5 /* InfoPlist.strings */; };
@@ -575,6 +579,8 @@
 		5F117E40000000000000E101 /* TabReadPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabReadPolicyTests.swift; sourceTree = "<group>"; };
 		5F117E40000000000000F101 /* WindowFilterResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowFilterResolverTests.swift; sourceTree = "<group>"; };
 		5A220000000000000000A001 /* WindowAdmissionResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowAdmissionResolver.swift; sourceTree = "<group>"; };
+		5E9F1E0000000000000000A1 /* WineWindowPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WineWindowPolicy.swift; sourceTree = "<group>"; };
+		5E9F1E0000000000000000B1 /* WineWindowPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WineWindowPolicyTests.swift; sourceTree = "<group>"; };
 		5A220000000000000000A101 /* WindowAdmissionResolverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowAdmissionResolverTests.swift; sourceTree = "<group>"; };
 		5A220000000000000000B001 /* WindowSurfaceInventory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowSurfaceInventory.swift; sourceTree = "<group>"; };
 		5A220000000000000000B101 /* WindowSurfaceInventoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowSurfaceInventoryTests.swift; sourceTree = "<group>"; };
@@ -1228,6 +1234,8 @@
 				5EAA25B1000000000000A001 /* TestScenarioSimulatorTests.swift */,
 				BB0000000000000000000001 /* TabGroup.swift */,
 				5A220000000000000000A001 /* WindowAdmissionResolver.swift */,
+				5E9F1E0000000000000000A1 /* WineWindowPolicy.swift */,
+				5E9F1E0000000000000000B1 /* WineWindowPolicyTests.swift */,
 				5A220000000000000000A101 /* WindowAdmissionResolverTests.swift */,
 				5F791E4A2F1C65E100B6419C /* ApplicationDiscriminator.swift */,
 				5F906A332F16A18000B99924 /* Screens.swift */,
@@ -2187,6 +2195,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5E9F1E0000000000000000A3 /* WineWindowPolicy.swift in Sources */,
+				5E9F1E0000000000000000B2 /* WineWindowPolicyTests.swift in Sources */,
+				D04BA26A691D56031FCCF00D /* Sysctl.swift in Sources */,
 				10F5AECE239ADA681CF68695 /* SearchDiscoveryShortcut.swift in Sources */,
 				389D13E4E7FFA467D5BC68D8 /* SearchDiscoveryPolicy.swift in Sources */,
 				31F45195947F044608CC5D8A /* SearchDiscoveryPanel.swift in Sources */,
@@ -2347,6 +2358,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5E9F1E0000000000000000A2 /* WineWindowPolicy.swift in Sources */,
 				C966F89BC7C0D1E5F7C9B26E /* SearchDiscoveryShortcut.swift in Sources */,
 				254094A701BAF49F701F7EFF /* SearchDiscoveryPolicy.swift in Sources */,
 				E7DC5BA37EF80DD2802D96BD /* SearchDiscoveryPanel.swift in Sources */,
